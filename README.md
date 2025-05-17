@@ -65,7 +65,6 @@ npm run serve
 
 ```bash
 cd backend
-go mod init
 go mod tidy
 go run main.go
 ```
