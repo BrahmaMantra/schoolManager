@@ -80,12 +80,32 @@ router.beforeEach((to, from, next) => {
     } else {
       // Check if route requires specific roles
       const userRole = store.getters.userRole
-      const requiredRoles = to.meta.roles
+      console.log('当前用户角色:', userRole)
+      console.log('当前路由:', to.path)
       
-      if (requiredRoles && !requiredRoles.includes(userRole)) {
-        // User does not have required role, redirect to dashboard
-        next({ path: '/dashboard' })
+      // 如果store中没有用户信息，先加载用户信息
+      if (!userRole) {
+        store.dispatch('checkAuth').then(() => {
+          // 重新应用路由逻辑
+          router.push(to.path)
+        }).catch(() => {
+          next({ path: '/login' })
+        })
+        return
+      }
+      
+      if (to.meta && to.meta.roles) {
+        console.log('路由所需角色:', to.meta.roles)
+        // 判断用户是否有权限访问该路由
+        if (!to.meta.roles.includes(userRole)) {
+          console.log('用户没有权限，重定向到首页')
+          next({ path: '/dashboard' })
+        } else {
+          console.log('用户有权限，允许访问')
+          next()
+        }
       } else {
+        // 无需特定角色，允许访问
         next()
       }
     }

@@ -9,5 +9,14 @@ module.exports = defineConfig({
       }
     }
   },
-  lintOnSave: false
+  lintOnSave: false,
+  devServer: {
+    historyApiFallback: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true
+      }
+    }
+  }
 }) 

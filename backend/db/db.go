@@ -387,6 +387,52 @@ func SeedDB() error {
 		log.Println("Default admin created with username 'admin' and password 'admin123'")
 	}
 
+	// Check if departments exist
+	err = DB.QueryRow("SELECT COUNT(*) FROM departments").Scan(&count)
+	if err != nil {
+		return err
+	}
+
+	// If no departments exist, create sample departments
+	if count == 0 {
+		_, err = DB.Exec(`
+		INSERT INTO departments (name, code) VALUES 
+		('计算机学院', 'CS'),
+		('数学学院', 'MATH'),
+		('物理学院', 'PHY'),
+		('经济管理学院', 'ECON')
+		`)
+		if err != nil {
+			return err
+		}
+		log.Println("Sample departments created")
+	}
+
+	// Check if courses exist
+	err = DB.QueryRow("SELECT COUNT(*) FROM courses").Scan(&count)
+	if err != nil {
+		return err
+	}
+
+	// If no courses exist, create sample courses
+	if count == 0 {
+		_, err = DB.Exec(`
+		INSERT INTO courses (name, code, credits, hours, type, department_id, description) VALUES 
+		('计算机导论', 'CS101', 3, 48, '必修课', 1, '计算机基础入门课程'),
+		('数据结构', 'CS201', 4, 64, '必修课', 1, '数据结构基础课程'),
+		('高等数学', 'MA101', 5, 80, '必修课', 2, '微积分、线性代数等基础数学知识'),
+		('Web前端开发', 'CS301', 2.5, 40, '选修课', 1, 'HTML, CSS, JavaScript基础教学'),
+		('数据库原理', 'CS202', 4, 64, '必修课', 1, '数据库设计与应用'),
+		('计算机网络', 'CS203', 3.5, 56, '必修课', 1, '网络协议与架构'),
+		('物理实验', 'PHY101', 2, 32, '实践课', 3, '基础物理实验'),
+		('经济学原理', 'ECON101', 3, 48, '必修课', 4, '微观经济学与宏观经济学基础')
+		`)
+		if err != nil {
+			return err
+		}
+		log.Println("Sample courses created")
+	}
+
 	return nil
 }
 

@@ -118,48 +118,7 @@ export default {
   data() {
     return {
       loading: false,
-      courses: [
-        {
-          id: 1,
-          name: '计算机导论',
-          code: 'CS101',
-          credits: 3,
-          hours: 48,
-          type: '必修课',
-          department: { id: 1, name: '计算机学院' },
-          description: '计算机基础入门课程'
-        },
-        {
-          id: 2,
-          name: '数据结构',
-          code: 'CS201',
-          credits: 4,
-          hours: 64,
-          type: '必修课',
-          department: { id: 1, name: '计算机学院' },
-          description: '数据结构基础课程'
-        },
-        {
-          id: 3,
-          name: '高等数学',
-          code: 'MA101',
-          credits: 5,
-          hours: 80,
-          type: '必修课',
-          department: { id: 2, name: '数学学院' },
-          description: '微积分、线性代数等基础数学知识'
-        },
-        {
-          id: 4,
-          name: 'Web前端开发',
-          code: 'CS301',
-          credits: 2.5,
-          hours: 40,
-          type: '选修课',
-          department: { id: 1, name: '计算机学院' },
-          description: 'HTML, CSS, JavaScript基础教学'
-        }
-      ],
+      courses: [],
       departments: [],
       dialogVisible: false,
       dialogStatus: 'add', // 'add' or 'edit'
@@ -199,6 +158,7 @@ export default {
   },
   created() {
     this.fetchDepartments()
+    this.fetchCourses()
   },
   methods: {
     // 获取所有院系
@@ -209,6 +169,20 @@ export default {
       } catch (error) {
         this.$message.error('获取院系数据失败')
         console.error(error)
+      }
+    },
+
+    // 获取所有课程
+    async fetchCourses() {
+      this.loading = true
+      try {
+        await this.$store.dispatch('fetchCourses')
+        this.courses = this.$store.getters.courses
+      } catch (error) {
+        this.$message.error('获取课程数据失败')
+        console.error(error)
+      } finally {
+        this.loading = false
       }
     },
 
@@ -255,7 +229,7 @@ export default {
         credits: row.credits,
         hours: row.hours,
         type: row.type,
-        departmentId: row.department.id,
+        departmentId: row.department_id,
         description: row.description
       }
       this.dialogVisible = true
@@ -270,63 +244,45 @@ export default {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).then(() => {
-        // 模拟删除成功
-        this.courses = this.courses.filter(item => item.id !== row.id)
-        this.$message.success('删除成功')
+      }).then(async () => {
+        try {
+          await this.$store.dispatch('deleteCourse', row.id)
+          this.$message.success('删除成功')
+        } catch (error) {
+          this.$message.error(error.response?.data?.error || '删除失败')
+          console.error(error)
+        }
       }).catch(() => {})
     },
 
     // 提交表单
     submitForm() {
-      this.$refs['courseForm'].validate(valid => {
+      this.$refs['courseForm'].validate(async valid => {
         if (valid) {
-          // 模拟提交成功
-          if (this.dialogStatus === 'add') {
-            // 生成假ID
-            const newId = Math.max(...this.courses.map(c => c.id)) + 1
-            const department = this.departments.find(d => d.id === this.courseForm.departmentId)
-            
-            this.courses.push({
-              id: newId,
-              name: this.courseForm.name,
-              code: this.courseForm.code,
-              credits: this.courseForm.credits,
-              hours: this.courseForm.hours,
-              type: this.courseForm.type,
-              department: {
-                id: department.id,
-                name: department.name
-              },
-              description: this.courseForm.description
-            })
-            
-            this.$message.success('新增课程成功')
-          } else {
-            // 查找并更新
-            const index = this.courses.findIndex(c => c.id === this.courseForm.id)
-            const department = this.departments.find(d => d.id === this.courseForm.departmentId)
-            
-            if (index !== -1) {
-              this.courses[index] = {
-                ...this.courses[index],
-                name: this.courseForm.name,
-                code: this.courseForm.code,
-                credits: this.courseForm.credits,
-                hours: this.courseForm.hours,
-                type: this.courseForm.type,
-                department: {
-                  id: department.id,
-                  name: department.name
-                },
-                description: this.courseForm.description
-              }
+          try {
+            if (this.dialogStatus === 'add') {
+              await this.$store.dispatch('createCourse', this.courseForm)
+              this.$message.success('新增课程成功')
+            } else {
+              await this.$store.dispatch('updateCourse', {
+                id: this.courseForm.id,
+                course: {
+                  name: this.courseForm.name,
+                  code: this.courseForm.code,
+                  credits: this.courseForm.credits,
+                  hours: this.courseForm.hours,
+                  type: this.courseForm.type,
+                  department_id: this.courseForm.departmentId,
+                  description: this.courseForm.description
+                }
+              })
+              this.$message.success('更新课程成功')
             }
-            
-            this.$message.success('更新课程成功')
+            this.dialogVisible = false
+          } catch (error) {
+            this.$message.error(error.response?.data?.error || '操作失败')
+            console.error(error)
           }
-          
-          this.dialogVisible = false
         }
       })
     }

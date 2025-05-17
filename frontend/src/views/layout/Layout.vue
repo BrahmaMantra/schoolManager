@@ -34,6 +34,7 @@
           <breadcrumb />
         </div>
         <div class="header-right">
+          <span style="margin-right: 15px;">角色: {{ userRole }}</span>
           <el-dropdown trigger="click" @command="handleCommand">
             <span class="el-dropdown-link">
               {{ username }}<i class="el-icon-arrow-down el-icon--right"></i>
@@ -73,6 +74,9 @@ export default {
   computed: {
     username() {
       return this.$store.state.user ? this.$store.state.user.name : 'User'
+    },
+    userRole() {
+      return this.$store.getters.userRole || '未知'
     },
     activeMenu() {
       const route = this.$route
