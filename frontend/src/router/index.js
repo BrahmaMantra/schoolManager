@@ -46,6 +46,18 @@ const routes = [
         meta: { title: '课程管理', icon: 'el-icon-reading', roles: ['admin', 'academic', 'department', 'teacher'] }
       },
       {
+        path: 'grades',
+        name: 'StudentGrades',
+        component: () => import('@/views/grade/StudentGrades.vue'),
+        meta: { title: '我的成绩', icon: 'el-icon-document', roles: ['student', 'admin', 'academic', 'department', 'teacher'] }
+      },
+      {
+        path: 'grade-management',
+        name: 'TeacherGrades',
+        component: () => import('@/views/grade/TeacherGrades.vue'),
+        meta: { title: '成绩管理', icon: 'el-icon-edit-outline', roles: ['admin', 'academic', 'department', 'teacher'] }
+      },
+      {
         path: 'profile',
         name: 'Profile',
         component: () => import('@/views/user/Profile.vue'),

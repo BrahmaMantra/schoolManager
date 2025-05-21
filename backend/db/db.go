@@ -231,8 +231,7 @@ func createTables() error {
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 		updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 		FOREIGN KEY (student_id) REFERENCES students(id),
-		FOREIGN KEY (course_offering_id) REFERENCES course_offerings(id),
-		UNIQUE(student_id, course_offering_id)
+		FOREIGN KEY (course_offering_id) REFERENCES course_offerings(id)
 	)`)
 	if err != nil {
 		return err
@@ -431,6 +430,22 @@ func SeedDB() error {
 			return err
 		}
 		log.Println("Sample courses created")
+	}
+
+	// Add some sample enrollments
+	_, err = DB.Exec(`
+	INSERT INTO enrollments (student_id, course_offering_id, grade, status)
+	VALUES 
+		(1, 1, 85.5, '已完成'),
+		(1, 2, 92.0, '已完成'),
+		(2, 1, 78.5, '已完成'),
+		(3, 1, 92.0, '已完成'),
+		(4, 1, 56.5, '未通过'),
+		(3, 2, 84.5, '已完成')
+	ON CONFLICT(student_id, course_offering_id) DO NOTHING
+	`)
+	if err != nil {
+		log.Printf("Warning: Failed to seed enrollments: %v", err)
 	}
 
 	return nil

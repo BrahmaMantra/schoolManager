@@ -59,6 +59,15 @@ func SetupRouter() *gin.Engine {
 			courses.DELETE("/:id", middleware.RoleMiddleware("admin", "academic"), controllers.DeleteCourse)
 		}
 
+		// Grade routes
+		grades := protected.Group("/grades")
+		{
+			grades.GET("/student", controllers.GetStudentGrades)
+			grades.GET("/course", middleware.RoleMiddleware("admin", "academic", "department", "teacher"), controllers.GetCourseGrades)
+			grades.POST("", middleware.RoleMiddleware("admin", "academic", "department", "teacher"), controllers.CreateGrade)
+			grades.PUT("/:id", middleware.RoleMiddleware("admin", "academic", "department", "teacher"), controllers.UpdateGrade)
+		}
+
 		// Future routes for majors, classes, courses, etc.
 		// TODO: Implement these routes as we develop the controllers
 	}
